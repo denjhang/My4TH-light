@@ -1,0 +1,188 @@
+----[001]-------------------------------------------------------
+\ Tic Tac Toe Game using a LED+keyboard extension board
+\ for the My4TH light platform, www.mynor.org/my4th
+\ Written by Dennis Kuschel, 2023-10-22
+
+\ PCF8575/Keyboard   I2C address:  0x40
+\ PCF8575/LED-Matrix I2C address:  0x42
+
+
+0 value ledsl   \ LEDs 0-15
+0 value ledsh   \ LEDs 16-23
+0 value fieldr  \ places occupied by player 1 / red
+0 value fieldb  \ places occupied by player 2 / blue
+0 value player  \ 0=red, 1=blue
+0 value numpl   \ number of players, 0: 1 player, 1: 2 players
+0 value lastmv  \ last move
+
+----[002]-------------------------------------------------------
+9  constant led_player   11 constant led_numpl
+10 constant key_numpl    11 constant key_reset
+
+: led-matrix-off ( -- )
+  0 to ledsl  ledsh $EE and to ledsh
+  ledsl invert ioset  ledsh invert kout ;
+
+: to-bitmask ( bitno -- bitmask ) 1 swap lshift ;
+
+: led-set ( onoff color led -- )  dup 8 < if
+    swap 3 lshift +  to-bitmask swap if ledsl or else
+    invert ledsl and then to ledsl ledsl invert ioset
+  else
+    8 - swap 2 lshift +  to-bitmask swap if ledsh
+    or else invert ledsh and then to ledsh ledsh invert kout
+  then ;
+----[003]-------------------------------------------------------
+: led-on ( color led -- )
+  true rot rot led-set ;
+
+: led-off ( led -- )
+  >r false 0 r> dup >r led-set false 1 r> led-set ;
+
+: set-tile ( position -- )  \ current player sets a token
+  dup to lastmv
+  player swap ( pos player => color lednum )
+  2dup to-bitmask swap if fieldb or to fieldb
+  else fieldr or to fieldr then led-on ;
+
+: set-numpl-led ( -- )
+  numpl if 1 1 led_numpl led-set 0 0 led_numpl led-set else
+  1 0 led_numpl led-set 0 1 led_numpl led-set then ;
+
+----[004]-------------------------------------------------------
+: set-player-led ( -- )
+  player if 1 1 led_player led-set 0 0 led_player led-set else
+  1 0 led_player led-set 0 1 led_player led-set then ;
+
+: player-led-off ( -- )
+  0 0 led_player led-set 0 1 led_player led-set ;
+
+: clean-matrix ( -- )
+  0 to fieldr  0 to fieldb  led-matrix-off ;
+
+: fieldrb ( -- rORb )  fieldr fieldb or ;
+
+: is-free ( position -- flag )  to-bitmask fieldrb and 0= ;
+
+: next-player ( -- )
+  1 player - to player set-player-led ;
+----[005]-------------------------------------------------------
+: chkrows ( playfield -- false | mask true )
+  >r 0  $054 $111 $124 $092 $049 $1C0 $038 $007
+  begin dup while
+    r> 2dup over and = if
+      drop >r begin 0= until r> true exit
+    else
+      swap drop >r
+    then
+  repeat rdrop
+;
+
+: win? ( -- false | mask true )
+  player if fieldb else fieldr then chkrows ;
+
+: nomove?   ( -- flag )  fieldrb $1ff and 0= ;
+: finished? ( -- flag )  fieldrb $1ff and $1ff = ;
+----[006]-------------------------------------------------------
+: cpu-random ( -- )
+  4 is-free if \ set a token to the center if it is still free
+    lastmv 0 = lastmv 2 = lastmv 6 = lastmv 8 =
+    3 random 0= or or or or if 4 set-tile exit then
+  then  \ count number of free fields
+  0 fieldrb  9 0 do 
+    dup 1 and 0= if swap 1+ swap then 1 rshift
+  loop drop
+  random  \ choose a random field
+  fieldrb $1ff and 0
+  begin  \ now calculate LED index and occupie the tile
+    begin 2dup to-bitmask and 0<> while 1+ repeat
+    rot dup >r 1- -rot r> 0<>
+  while 1+ repeat
+  -rot 2drop set-tile
+;
+----[007]-------------------------------------------------------
+: tryrow ( playfield -- flag )
+  9 0 do
+    i is-free if
+      dup i to-bitmask or chkrows
+      if 2drop i set-tile true unloop exit then
+    then
+  loop drop false
+;
+
+: cpu-player ( -- )
+  fieldb tryrow invert if    \ 1. try to win
+    fieldr tryrow invert if  \ 2. prevent human from winning
+      cpu-random             \ 3. play random field
+    then
+  then
+;
+----[008]-------------------------------------------------------
+: toggle-numpl ( nextplayer -- )
+  to player  1 numpl - to numpl  set-numpl-led ;
+
+: show-winner ( pattern -- )
+  0 swap begin
+    9 0 do
+      dup i to-bitmask and 0<> if
+        over if player i led-on else i led-off then
+        kread if case
+          key_numpl of 1 toggle-numpl 2drop exit endof
+          key_reset of 2drop exit endof
+        endcase then
+      then
+    loop
+  swap invert swap again
+;
+----[009]-------------------------------------------------------
+
+: show-tie ( -- )
+  300 ms 9 0 do 100 ms i led-off loop ;
+
+: game-over? ( -- flag )
+  win? if player-led-off show-winner next-player true else
+  finished? if player-led-off show-tie next-player true else
+  false then then
+;
+
+: start-game ( -- )
+  0 to fieldr  0 to fieldb  9 to lastmv
+  clean-matrix set-numpl-led set-player-led
+;
+
+
+----[010]-------------------------------------------------------
+: play ( -- )  begin  \ play one move
+  numpl 0= if
+    player 0<> if cpu-player game-over? if exit then
+    next-player then
+  then
+  begin kread until 
+  dup 10 < if
+    1- dup is-free if
+      set-tile game-over? if exit then next-player
+    else drop then
+  else key_numpl = if
+    0 toggle-numpl exit
+  else \ key_reset
+    nomove? if next-player then start-game
+  then then
+again ;
+----[011]-------------------------------------------------------
+: startup-animation ( -- )
+  3 0 do i
+    3 *  3 0 do dup 1 swap led-on 40 ms 1+ loop
+    3 -  3 0 do dup led-off 40 ms 1+ loop
+  drop loop
+;
+
+: init-game ( -- )
+  $42 4 ioinit $FFFF iocfg $FFFF ioset
+  $40 4 kinit $FF kout
+  0 to ledsl   0 to ledsh
+  0 to player  0 to numpl
+;
+
+: run ( -- )
+  init-game startup-animation begin start-game play again ;
+----[EOF]-------------------------------------------------------

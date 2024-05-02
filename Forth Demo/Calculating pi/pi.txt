@@ -1,0 +1,152 @@
+
+
+
+
+
+
+PI=4/1 - 4/3 + 4/5 - 4/7 + 4/9 - 4/11 
+莱布尼茨公式
+I=1
+S=1
+S=S+((-1)^I*(1/(2*I+1)))
+PRINT 4*S
+I=I+1
+GOTO 30
+
+
+RUN
+
+随机数
+: rnd dup 0 do dup random . loop ;
+32768 rnd
+
+
+------------------------------------------------
+: expansion fdup fsin f+ ; 
+: runpi 1e0 6 0 do expansion loop ; 
+----------------------------------------
+: exps fdup fsin f+ fdup f. ; 
+: runpi 1e0 4 0 do cr ." pi = " exps loop cr ; 
+runpi
+经测试这个效果很好
+N1=N0+Sin(N0)
+----------------------------------------
+马青公式
+pi=16*arctan(1/5)-4*arctan(1/239)
+
+: pi ." = "
+1e 5e f/ fatan 16e f* fdup f. ." - " 
+1e 239e f/ fatan 4e f* fdup f. ." = " 
+f- fdup f. ;
+pi
+经测试这个效果也很好
+
+----------------------------------------
+: map  ( map-index-num -- output ) 
+  drop rand dup * 
+       rand dup * + 
+  1 < ; 
+: combine ( left right -- combined )
+  + ;
+: map_combine ( num-maps -- combined )
+  0 swap 0 do
+      i map combine
+  loop ;
+: pi  ( num-maps -- )
+  dup map_combine swap / 4 * . ;
+1000000000000000 pi
+
+-------------------------------------------------------
+( Pi example in forth          )
+( Developed/tested with GForth )
+( Dr Owain Kenway              )
+
+VARIABLE n           ( number of slices     )
+VARIABLE totalsum    ( total sum of slices  )
+VARIABLE step        ( size of slice        )
+VARIABLE x           ( intermediate value 1 )
+VARIABLE x2          ( intermediate value 2 )
+VARIABLE mypi        ( estimate of pi       )
+VARIABLE start       ( start time [us]      ) 
+VARIABLE stop        ( finish time [us]     )
+VARIABLE time        ( elapsed time [s]     )
+
+: PICALC ( Calculates pi as per other examples ) 
+
+( If there's a value at the top of the stack set that to n otherwise )
+( set n to some default value. )
+  depth 1 >= if 
+    n ! 
+  else 
+    100000000  n ! 
+  then
+
+  0e totalsum f!
+  1e n @ s>f f/ step f!
+
+  ." Calculating PI using: " CR ."   " n @ . ." slices" CR
+
+( Get current time in microseconds. )
+  utime DROP start ! 
+
+  n @ 0 DO      
+    I s>f 0.5e f+ step f@ f* x f!           ( x = [i + 0.5] * step )
+    x f@ FDUP f* 1e f+ x2 f!                ( x2 = x^2 + 1         )
+    4e x2 f@ f/ totalsum f@ f+ totalsum f!  ( totalsum += 4/x2     )
+  LOOP 
+
+  totalsum f@ step f@ f* mypi f! 
+
+( Get current time in microseconds. )
+  utime DROP stop !
+  stop @ s>f start @ s>f f- 1000000e f/ time f! 
+
+  ." Obtained value of PI: " mypi f@ f. CR
+  ." Time taken:  " time f@ f. ." seconds" CR
+  ;
+
+( Run PICALC word and then exit )
+PICALC
+BYE
+---------------------------------------------
+VARIABLE n           
+VARIABLE totalsum    
+VARIABLE step        
+VARIABLE x           
+VARIABLE x2          
+VARIABLE mypi        
+VARIABLE start       
+VARIABLE stop        
+VARIABLE time        
+
+: PICALC 
+
+  depth 1 >= if 
+    n ! 
+  else 
+    9999  n ! 
+  then
+
+  0e totalsum f!
+  1e n @ s>f f/ step f!
+
+  ." Calculating PI using: " CR ."   " n @ . ." slices" CR
+
+  utime DROP start ! 
+
+  n @ 0 DO      
+    I s>f 0.5e f+ step f@ f* x f!           
+    x f@ FDUP f* 1e f+ x2 f!                
+    4e x2 f@ f/ totalsum f@ f+ totalsum f!  
+  LOOP 
+
+  totalsum f@ step f@ f* mypi f! 
+
+  utime DROP stop !
+  stop @ s>f start @ s>f f- 1000000e f/ time f! 
+
+  ." Obtained value of PI: " mypi f@ f. CR
+  ." Time taken:  " time f@ f. ." seconds" CR
+  ;
+
+PICALC

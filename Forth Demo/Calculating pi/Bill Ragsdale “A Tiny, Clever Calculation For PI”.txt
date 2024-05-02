@@ -1,0 +1,4 @@
+: exps fdup fsin f+ fdup f. ; 
+: runpi 1e0 4 0 do cr 
+." pi = " exps loop cr ; 
+pi

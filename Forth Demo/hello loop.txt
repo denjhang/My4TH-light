@@ -1,0 +1,5 @@
+: hello 10 0 do cr ." Hello world!" loop ; 
+hello
+
+
+: hello 99 0 do ." 1 " loop ; 

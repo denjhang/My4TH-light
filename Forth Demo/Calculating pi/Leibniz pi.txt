@@ -1,0 +1,15 @@
+( pi=4*(1-1/3+1/5-...) )
+
+: exp 4e frot 2e f* 
+1e f- f/ f* ;
+: pi 2 page do
+i 2 = if 4e then
+i s>f 
+i 2 mod 0=
+if 1e
+else -1e
+then exp 
+f- fdup ." i = " i 1- . 
+." pi = " f. cr loop ;
+122 pi ( 3.14 )
+2027 pi ( 3.14159 )

@@ -1,0 +1,43 @@
+: count ( n-- )
+0 ( n 0 )
+do i cr . loop ; 
+10000 count ( 10 0 )
+
+这里括号是注释
+do是for循环，使用堆栈中前两个数字作为索引
+i作为循环索引，默认自增1
+
+: fplus parse-name >float drop f+ ;
+3.538999e0 fplus 2.7e0 f.
+
+浮点数相加
+
+: count ( n-- )
+0 ( n 0 )
+do i dup * . loop ; 
+10000 count ( 10 0 )
+
+dup表示重复的数
+
+: for-tst 10 0 do i ." hi " drop loop ; 
+for-tst
+
+: while-tst begin 1 - dup dup emit 0 = until ;
+100 while-tst
+该代码将导致terateam出现希腊字符 
+
+
+: while-tst begin 1 - dup dup . 0 = until ;
+100 while-tst
+
+
+
+: asciis 0 [char] a [char] b [char] c [char] d 
+begin cr dup dup . emit 0 = until ;
+see asciis
+ 
+: printkey begin cr key dup dup . ." = " emit 32 = until ;
+printkey
+
+接受键盘输入，直到输入空格
+ 

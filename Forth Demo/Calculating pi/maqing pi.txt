@@ -1,0 +1,7 @@
+: pi ." = "
+1e 5e f/ fatan 16e 
+f* fdup f. ." - " 
+1e 239e f/ fatan 4e 
+f* fdup f. ." = " 
+f- fdup f. ;
+pi

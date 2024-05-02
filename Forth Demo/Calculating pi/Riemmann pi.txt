@@ -1,0 +1,9 @@
+( pi=sqrt(sqrt(90*(1+1/2^4+1/3^4+...))) )
+
+: exp 90e fswap fdup f* fdup f* f/ ;
+: pi 2 page do 
+i 2 = if 90e then
+i s>f exp f+
+fdup fsqrt fsqrt ." i = " i 1 - . 
+." pi = " f. cr loop fdrop ;
+34 pi ( 3.14159 ) 

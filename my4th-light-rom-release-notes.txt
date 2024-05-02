@@ -1,0 +1,19 @@
+
+My4TH light EPROM Version History & Release Notes
+-------------------------------------------------
+
+
+ROM v1.1
+--------
+  - fixed a bad bug in the floating point routines
+
+ROM v1.0
+--------
+  initial version based on My4TH ROM v1.4
+  additional new features:
+  - much faster I2C bus
+  - improved line editing at the command prompt (e.g. support for inserting characters)
+  - improved built-in text editor
+  additional features especially for My4TH light:
+  - built-in word sets: floating point, string, facility
+  - I2C support words for LCD, GPIO, UART, etc.

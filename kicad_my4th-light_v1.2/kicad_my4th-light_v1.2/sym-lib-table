@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "628128_dip32_ssop32")(type "Legacy")(uri "/home/dennis/Daten/KiCad/temp/628128_dip32_ssop32.lib")(options "")(descr "")(disabled)(hidden))
+  (lib (name "my4th-light-rescue")(type "Legacy")(uri "${KIPRJMOD}/my4th-light-rescue.lib")(options "")(descr ""))
+)

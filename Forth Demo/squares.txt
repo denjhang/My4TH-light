@@ -1,0 +1,2 @@
+: squares 182 1 do I dup * . loop ; 
+squares

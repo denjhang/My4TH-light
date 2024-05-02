@@ -1,0 +1,22 @@
+variable abc
+10 abc !
+abc ?
+abc @
+
+
+!为赋值，？为查询变量,@调用变量
+
+abc @  ok
+.s <1> 10  ok
+
+4  ok
+.s <2> 10 4  ok
+
+abc  ok
+.s <3> 10 4 -31640  ok
+
++!  ok
+.s <1> 10  ok
+abc ? 14  ok
+
++!相当于自增

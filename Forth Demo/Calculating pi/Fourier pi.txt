@@ -1,0 +1,10 @@
+( pi=sqrt(8*(1+1/3+1/5+...)) )
+
+: exp 8e fswap 2e f* 
+1e f+ fdup f* f/ ;
+: pi 1 page do
+i 1 = if 8e then
+i s>f exp f+
+fdup fsqrt ." i = " i . 
+." pi = " f. cr loop fdrop ;
+204 pi ( 3.14 )
